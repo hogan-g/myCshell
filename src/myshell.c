@@ -12,6 +12,7 @@ void errorhandler(char*);
 void prompt(char * cwd);
 int filecheck(char ** args);
 FILE* batchfile(char * file);
+int lookforsymbol(char * arg);
 
 //commands
 void clear();
@@ -175,6 +176,15 @@ int filecheck(char ** args) // big function to check for input and output files 
     return 0; // return signal saying all is fine
 }
 
+int lookforsymbol(char * arg)
+{
+    if(strcmp(arg,"<") == 0 || strcmp(arg, ">") == 0 || strcmp(arg, ">>") == 0)
+    {
+        return 0;
+    }
+    return 1;
+}
+
 void command_select(char ** args) // big switch case function to test if given command is internal
 {
     if(strcmp(args[0],"quit") == 0){ // quit command
@@ -222,7 +232,15 @@ void dir(char ** args)
 {
     char base[] = "ls"; // base command for dir is ls
     char defaultarg[] = "-al"; // default dir should always use -al
-    execlp(base,base,defaultarg,args[1],NULL);
+     // in case user wants to redirect default dir with no args, so ls won't try read < as a file
+    if(args[1] != NULL && lookforsymbol(args[1]) == 0)
+    {
+        execlp(base,base,defaultarg,NULL);
+    }
+    else
+    {
+        execlp(base,base,defaultarg,args[1],NULL);
+    }
     return;
 }
 
@@ -281,8 +299,17 @@ void pauseshell() // pause shell
 
 void external_command(char ** args) // for any unrecognised internal command, push to OS 
 {
+    int i = 0;
+    char *argsmodified[100];
+    // protection against commands seeing the I/O redirection symbols in their args, i.e. ls tries to read < as a dir
+    while(lookforsymbol(args[i]) != 0) 
+    {
+        argsmodified[i] = args[i];
+        i++;
+    }
+
     int error;
-    error = execvp(args[0],args); // exevp the whole array of args, returns a code
+    error = execvp(argsmodified[0],argsmodified); // exevp the whole array of args, returns a code
     if(error == -1) // if code signals an error, tell the user
     {
             printf("\033[0;31m");
