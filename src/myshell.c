@@ -23,6 +23,7 @@ void echo(char ** args);
 void pauseshell();
 int backgroundcheck(char ** args);
 void external_command(char ** args);
+void parentcommands(char ** args);
 void command_select(char **args);
 
 
@@ -57,6 +58,8 @@ int main(int argc, char*argv[])
 
             int waitint = backgroundcheck(args); // invokes funtion to check for & after program
             
+            parentcommands(args);
+
             switch(pid = fork()) // main fork to send child off to do stuff
             {
                 case -1: // case for if an error occurs when forking
@@ -185,22 +188,25 @@ int lookforsymbol(char * arg)
     return 1;
 }
 
-void command_select(char ** args) // big switch case function to test if given command is internal
+void parentcommands(char ** args)
 {
     if(strcmp(args[0],"quit") == 0){ // quit command
-        printf("QUIT COMMAND RECEIVED\n");
         exit(0);
     }
+    if(strcmp(args[0], "cd") == 0){
+        cd(args);
+        return;
+    }
+}
+
+void command_select(char ** args) // big switch case function to test if given command is internal
+{
     if(strcmp(args[0], "clr") == 0){
         clear();
         return;
     }
     if(strcmp(args[0], "dir") == 0){
         dir(args);
-        return;
-    }
-    if(strcmp(args[0], "cd") == 0){
-        cd(args);
         return;
     }
     if(strcmp(args[0], "environ") == 0){
@@ -214,6 +220,10 @@ void command_select(char ** args) // big switch case function to test if given c
     if(strcmp(args[0], "pause") == 0)
     {
         pauseshell();
+        return;
+    }
+    if (strcmp(args[0],"quit") == 0 || strcmp(args[0],"cd") == 0)
+    {
         return;
     }
     else{ // if it matches none of our internal commands, send it to function for external commands
@@ -267,6 +277,7 @@ void getenviron() // print our environ strings
     while(environ[count] != NULL) // iterate through external array containing env strings
     {
         puts(environ[count]); // print them out
+        fflush(stdout);
         count++; //iterate
     }
     return;
@@ -274,17 +285,36 @@ void getenviron() // print our environ strings
 
 void echo(char ** args) // internal echo command
 {
+    int nocolour = 0;
     char string[100] = ""; // base string to add all args to
     int i = 1; // starting index for iterating thru args
-    while(args[i] != NULL) //iterate
+    while(args[i] != NULL && lookforsymbol(args[i]) != 0) //iterate
     {
         strcat(string, args[i]); //add args to string + a space inbetween
         strcat(string, " ");
         i++;
     }
-    printf("\033[0;33m");
-    printf("%s\n", string); //print the string in yellow
-    printf("\033[0m");
+    i = 0;
+
+    while(args[i] != NULL)
+    {
+        if(lookforsymbol(args[i]) == 0)
+        {
+            nocolour = 1;
+        }
+        i++;
+    }
+    if(nocolour == 0)
+    {
+        printf("\033[0;33m");
+        printf("%s\n", string); //print the string in yellow
+        printf("\033[0m");
+    }
+    else
+    {
+        printf("%s\n", string);
+        fflush(stdout);
+    }
     return;
 }
 
@@ -302,19 +332,20 @@ void external_command(char ** args) // for any unrecognised internal command, pu
     int i = 0;
     char *argsmodified[100];
     // protection against commands seeing the I/O redirection symbols in their args, i.e. ls tries to read < as a dir
-    while(lookforsymbol(args[i]) != 0) 
+    while(args[i] != NULL && lookforsymbol(args[i]) != 0) 
     {
         argsmodified[i] = args[i];
         i++;
     }
+    argsmodified[i] = NULL;
 
     int error;
     error = execvp(argsmodified[0],argsmodified); // exevp the whole array of args, returns a code
     if(error == -1) // if code signals an error, tell the user
     {
-            printf("\033[0;31m");
-            printf("Unknown command, try another.\n");
-            printf("\033[0m");
+        printf("\033[0;31m");
+        printf("Unknown command, try another.\n");
+        printf("\033[0m");
     }
     return;
 }
