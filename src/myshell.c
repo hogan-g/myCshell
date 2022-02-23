@@ -1,42 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include<sys/wait.h>
-#define SEPERATORS " \t\n"
-
-extern char **environ;
-extern int errno;     
-
-void errorhandler(char*);
-void prompt(char * cwd);
-int filecheck(char ** args);
-FILE* batchfile(char * file);
-int lookforsymbol(char * arg);
-
-//commands
-void clear();
-void dir(char ** args);
-void cd (char ** args);
-void getenviron();
-void echo(char ** args);
-void pauseshell();
-int backgroundcheck(char ** args);
-void external_command(char ** args);
-void parentcommands(char ** args);
-void command_select(char **args);
-
+#include "myheader.h" //my header file containing function prototypes, include statements and extern variables.
 
 int main(int argc, char*argv[])
 {
     char * args[100]; // set up space to store arguments
     char ** arg; // pointer into args array
-    char buff[100];
-    int batch = 1; //signal variable default = no batch
-    
+    char buff[100];    
     char cwd[256]; // variable to store cwd
     getcwd(cwd,sizeof(cwd)); // get starting cwd
 
+    int batch = 1; //flag variable default = no batch
     FILE *fp = stdin; //default file pointer for stdin
     if(argv[1]){ // if there is an argument after invocation of shell i.e. a batchfile
         batch = 0; //signal variable changes to say yes there is a batch file
@@ -52,10 +24,10 @@ int main(int argc, char*argv[])
         if(fgets(buff, sizeof(buff), (FILE*)fp)) // if able to get a line from user/batch
         {
 
-            arg = args;
+            arg = args;  //tokenizing code sample taken from Lab04/05 C - Your First Shell
             *arg++ = strtok(buff, SEPERATORS); // split 1st argument from line by whitespace
             while((*arg++ = strtok(NULL,SEPERATORS))); // add all args to array, splitting as goes
-
+            
             int waitint = backgroundcheck(args); // invokes funtion to check for & after program
             
             parentcommands(args);
@@ -67,14 +39,9 @@ int main(int argc, char*argv[])
                     break;
                 case 0: ; // case for the child, here is what the child will do
                     int check = filecheck(args);
-                    //puts("HELLO? (from puts)");
-                    //printf("Hello? (From printf)\n");
-                    //puts("WHat da frick?");
                     if(check == 0){
                         command_select(args);
                     }
-                    //puts("After command? (from puts)");
-                    //printf("after? (From printf)\n");
                     pid_t childpid = getpid(); //get pid of child
                     kill(childpid, SIGTERM); // kill the child after it is finished, prevents children spawning children
                     break;
@@ -159,7 +126,6 @@ int filecheck(char ** args) // big function to check for input and output files 
                 printf("\033[0m");
                 return 1;
             case 0: // if file is fine
-                //printf("Input file is %s\n", args[input]);
                 freopen(args[input], "r", stdin); // open file replacing stdin
         }
     }
@@ -167,12 +133,10 @@ int filecheck(char ** args) // big function to check for input and output files 
     {
         if(strcmp(args[output - 1], ">") == 0) // truncating 
         {
-            printf("Opened %s for output truncating\n", args[output]);
             freopen(args[output], "w", stdout); //open in w mode
         }
         else if(strcmp(args[output - 1], ">>") == 0) // appending
         {
-            printf("Opened %s for output appending\n", args[output]);
             freopen(args[output], "a", stdout); // open in a mode
         }
     }
