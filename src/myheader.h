@@ -8,20 +8,22 @@
 extern char **environ;
 extern int errno;     
 
+// utility/shell functions
 void errorhandler(char*);
 void prompt(char * cwd);
 int filecheck(char ** args);
 FILE* batchfile(char * file);
 int lookforsymbol(char * arg);
-
-//commands
-void clear();
-void dir(char ** args);
-void cd (char ** args);
-void getenviron();
-void echo(char ** args);
-void pauseshell();
 int backgroundcheck(char ** args);
 void external_command(char ** args);
 void parentcommands(char ** args);
 void command_select(char **args);
+
+// commands
+void clear();               //clr
+void dir(char ** args);     //dir
+void cd (char ** args);     //cd
+void getenviron();          //environ
+void echo(char ** args);    //echo
+void pauseshell();          //pause
+void showhelp();            //help

@@ -186,6 +186,11 @@ void command_select(char ** args) // big switch case function to test if given c
         pauseshell();
         return;
     }
+    if(strcmp(args[0], "help") == 0)
+    {
+        showhelp();
+        return;
+    }
     if (strcmp(args[0],"quit") == 0 || strcmp(args[0],"cd") == 0)
     {
         return;
@@ -288,6 +293,12 @@ void pauseshell() // pause shell
     printf("Press [Enter] key to continue.");
     printf("\033[0m");
     getchar(); // waits until user presses enter
+    return;
+}
+
+void showhelp()
+{
+    execlp("more","more","manual/readme.md",NULL);
     return;
 }
 
