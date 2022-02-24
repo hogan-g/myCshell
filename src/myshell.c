@@ -6,7 +6,9 @@ int main(int argc, char*argv[])
     char ** arg; // pointer into args array
     char buff[100];    
     char cwd[256]; // variable to store cwd
+
     getcwd(cwd,sizeof(cwd)); // get starting cwd
+    setenvstrings(argv); // set PARENT and SHELL environment strings
 
     int batch = 1; //flag variable default = no batch
     FILE *fp = stdin; //default file pointer for stdin
@@ -68,6 +70,25 @@ void prompt(char* cwd) //function to print the prompt in cyan
     printf("\033[0;36m");
     printf("%s >>> ",cwd);
     printf("\033[0m");
+}
+
+void setenvstrings(char ** argv)
+{
+    char path[256]; // variable to store cwd
+    getcwd(path, sizeof(path));
+
+    char* chopdot = argv[0] + 1; //chops the dot from the first char in argv[0] ./bin/myshell
+    strcat(path, chopdot); // adds where executable is in relation to where it is called
+
+    char shell[1024];
+    strcat(shell, "SHELL=");  //base for shell environment string
+    strcat(shell, path);
+    putenv(strdup(shell)); // update environ string for SHELL
+
+    char parent[1024]; 
+    strcat(parent, "PARENT=");  //base for parent environment string
+    strcat(parent, path);
+    putenv(strdup(parent)); // update environ string for PARENT
 }
 
 FILE* batchfile(char * file) //batchfile checking function, returns update file pointer if there is one.

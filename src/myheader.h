@@ -18,6 +18,7 @@ int backgroundcheck(char ** args);
 void external_command(char ** args);
 void parentcommands(char ** args);
 void command_select(char **args);
+void setenvstrings(char ** argv);
 
 // commands
 void clear();               //clr
