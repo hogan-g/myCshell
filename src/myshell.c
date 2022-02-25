@@ -1,15 +1,28 @@
-#include "myheader.h" //my header file containing function prototypes, include statements and extern variables.
+// CA216 Shell Assignemnt 2022
+// Made by Gareth Hogan
+// Student Num: 20379616
+// I have read and acknowledge the DCU Academic Integrity and Plagiarism Policy. 
+
+#include "myheader.h" 
+//my header file containing function prototypes, include statements and extern variables.
+
+#include "utility.c"
+// my utility file for functions, any very simple functions and utility things are in there
+// the more complex functions, and functions to implements commands are in this file
 
 int main(int argc, char*argv[])
 {
+    // INITIALIZE MAJOR VARIABLES
     char * args[100]; // set up space to store arguments
     char ** arg; // pointer into args array
     char buff[100];    
     char cwd[256]; // variable to store cwd
 
+    // SET UP CWD AND ENVIRONMENT STRINGS
     getcwd(cwd,sizeof(cwd)); // get starting cwd
     setenvstrings(argv); // set PARENT and SHELL environment strings
 
+    //BATCH FILE CHECKING
     int batch = 1; //flag variable default = no batch
     FILE *fp = stdin; //default file pointer for stdin
     if(argv[1]){ // if there is an argument after invocation of shell i.e. a batchfile
@@ -17,6 +30,7 @@ int main(int argc, char*argv[])
         fp = batchfile(argv[1]); //invokes function while will overwrite stdin file pointer
     }
     
+
     while(!feof(fp)){ // while having not reached end of file of input file, stdin or batch
         pid_t pid;
 
@@ -29,47 +43,42 @@ int main(int argc, char*argv[])
             arg = args;  //tokenizing code sample taken from Lab04/05 C - Your First Shell
             *arg++ = strtok(buff, SEPERATORS); // split 1st argument from line by whitespace
             while((*arg++ = strtok(NULL,SEPERATORS))); // add all args to array, splitting as goes
-            
-            int waitint = backgroundcheck(args); // invokes funtion to check for & after program
-            
-            parentcommands(args);
-
-            switch(pid = fork()) // main fork to send child off to do stuff
+            if(args[0])
             {
-                case -1: // case for if an error occurs when forking
-                    errorhandler("fork to run command selector.");
-                    break;
-                case 0: ; // case for the child, here is what the child will do
-                    int check = filecheck(args);
-                    if(check == 0){
-                        command_select(args);
-                    }
-                    pid_t childpid = getpid(); //get pid of child
-                    kill(childpid, SIGTERM); // kill the child after it is finished, prevents children spawning children
-                    break;
-                default: // what the parent process will do
-                    if(waitint) // if the parent should wait
-                    {
-                        waitpid(pid, NULL, WUNTRACED);
-                    }
-                    else // if the parent shouldn't wait, i.e. for a background process
-                    {
-                        waitpid(pid, NULL, WNOHANG);
-                        sleep(1);
-                    }
-                    waitint = 1;
+                int waitint = backgroundcheck(args); // invokes funtion to check for & after program
+                
+                parentcommands(args);
+
+                switch(pid = fork()) // main fork to send child off to do stuff
+                {
+                    case -1: // case for if an error occurs when forking
+                        errorhandler("fork to run command selector.");
+                        break;
+                    case 0: ; // case for the child, here is what the child will do
+                        int check = filecheck(args);
+                        if(check == 0){
+                            command_select(args);
+                        }
+                        pid_t childpid = getpid(); //get pid of child
+                        kill(childpid, SIGTERM); // kill the child after it is finished, prevents children spawning children
+                        break;
+                    default: // what the parent process will do
+                        if(waitint) // if the parent should wait
+                        {
+                            waitpid(pid, NULL, WUNTRACED);
+                        }
+                        else // if the parent shouldn't wait, i.e. for a background process
+                        {
+                            waitpid(pid, NULL, WNOHANG);
+                            sleep(1);
+                        }
+                        waitint = 1;
+                }
             }
             getcwd(cwd, sizeof(cwd)); //refresh the stored cwd in case of updates to it (i.e. cd)
         }
     }
     fclose(fp); //closes the batchfile
-}
-
-void prompt(char* cwd) //function to print the prompt in cyan
-{
-    printf("\033[0;36m");
-    printf("%s >>> ",cwd);
-    printf("\033[0m");
 }
 
 void setenvstrings(char ** argv)
@@ -97,6 +106,7 @@ FILE* batchfile(char * file) //batchfile checking function, returns update file 
     switch(access(file, F_OK)) // checks if file exists
     {
         case -1:
+            errorhandler("batchfile function");
             printf("\033[0;31m");
             printf("Error: No such file %s exists\n", file);
             printf("\033[0m");
@@ -142,6 +152,7 @@ int filecheck(char ** args) // big function to check for input and output files 
         switch(access(args[input], F_OK)) // check access to input file
         {
             case -1: // error, no such file
+                errorhandler("inputfile function");
                 printf("\033[0;31m");
                 printf("Error: No such file %s exists\n", args[input]);
                 printf("\033[0m");
@@ -164,64 +175,6 @@ int filecheck(char ** args) // big function to check for input and output files 
     return 0; // return signal saying all is fine
 }
 
-int lookforsymbol(char * arg)
-{
-    if(strcmp(arg,"<") == 0 || strcmp(arg, ">") == 0 || strcmp(arg, ">>") == 0)
-    {
-        return 0;
-    }
-    return 1;
-}
-
-void parentcommands(char ** args)
-{
-    if(strcmp(args[0],"quit") == 0){ // quit command
-        exit(0);
-    }
-    if(strcmp(args[0], "cd") == 0){
-        cd(args);
-        return;
-    }
-}
-
-void command_select(char ** args) // big switch case function to test if given command is internal
-{
-    if(strcmp(args[0], "clr") == 0){
-        clear();
-        return;
-    }
-    if(strcmp(args[0], "dir") == 0){
-        dir(args);
-        return;
-    }
-    if(strcmp(args[0], "environ") == 0){
-        getenviron();
-        return;
-    }
-    if(strcmp(args[0], "echo") == 0){
-        echo(args);
-        return;
-    }
-    if(strcmp(args[0], "pause") == 0)
-    {
-        pauseshell();
-        return;
-    }
-    if(strcmp(args[0], "help") == 0)
-    {
-        showhelp();
-        return;
-    }
-    if (strcmp(args[0],"quit") == 0 || strcmp(args[0],"cd") == 0)
-    {
-        return;
-    }
-    else{ // if it matches none of our internal commands, send it to function for external commands
-        external_command(args);   
-        return;        
-    }
-}
-
 void clear()
 {
     execlp("clear","clear",NULL); // exec clear to clear screen
@@ -232,14 +185,14 @@ void dir(char ** args)
 {
     char base[] = "ls"; // base command for dir is ls
     char defaultarg[] = "-al"; // default dir should always use -al
-     // in case user wants to redirect default dir with no args, so ls won't try read < as a file
+    // in case user wants to redirect default dir with no args, so ls won't try read < as a file
     if(args[1] != NULL && lookforsymbol(args[1]) == 0)
     {
-        execlp(base,base,defaultarg,NULL);
+        execlp(base,base,defaultarg,NULL); //executes base form of dir, ignores any redirect symbols beside it
     }
     else
     {
-        execlp(base,base,defaultarg,args[1],NULL);
+        execlp(base,base,defaultarg,args[1],NULL); //includes args after dir when no redirect symbol is there
     }
     return;
 }
@@ -263,7 +216,7 @@ void cd(char ** args) // cd command
 
 void getenviron() // print our environ strings
 {
-    int count = 0;
+    int count = 0; //iterating variable
     while(environ[count] != NULL) // iterate through external array containing env strings
     {
         puts(environ[count]); // print them out
@@ -275,7 +228,7 @@ void getenviron() // print our environ strings
 
 void echo(char ** args) // internal echo command
 {
-    int nocolour = 0;
+    int nocolour = 0; // flag for no colour to print
     char string[100] = ""; // base string to add all args to
     int i = 1; // starting index for iterating thru args
     while(args[i] != NULL && lookforsymbol(args[i]) != 0) //iterate
@@ -288,13 +241,13 @@ void echo(char ** args) // internal echo command
 
     while(args[i] != NULL)
     {
-        if(lookforsymbol(args[i]) == 0)
+        if(lookforsymbol(args[i]) == 0) //if there is a redirection symbol we don't want to print colour, doesn't work in files
         {
-            nocolour = 1;
+            nocolour = 1; 
         }
         i++;
     }
-    if(nocolour == 0)
+    if(nocolour == 0) // if we don't want colour, i.e. printing to a file
     {
         printf("\033[0;33m");
         printf("%s\n", string); //print the string in yellow
@@ -303,7 +256,7 @@ void echo(char ** args) // internal echo command
     else
     {
         printf("%s\n", string);
-        fflush(stdout);
+        fflush(stdout); //push the output to the file
     }
     return;
 }
@@ -319,7 +272,7 @@ void pauseshell() // pause shell
 
 void showhelp()
 {
-    execlp("more","more","manual/readme.md",NULL);
+    execlp("more","more","-d","manual/readme.md",NULL); //executes the more command to open readme
     return;
 }
 
@@ -330,26 +283,19 @@ void external_command(char ** args) // for any unrecognised internal command, pu
     // protection against commands seeing the I/O redirection symbols in their args, i.e. ls tries to read < as a dir
     while(args[i] != NULL && lookforsymbol(args[i]) != 0) 
     {
-        argsmodified[i] = args[i];
+        argsmodified[i] = args[i]; //while no redirect encountered build a new args array
         i++;
     }
-    argsmodified[i] = NULL;
+    argsmodified[i] = NULL; // end the modified array
 
     int error;
     error = execvp(argsmodified[0],argsmodified); // exevp the whole array of args, returns a code
-    if(error == -1) // if code signals an error, tell the user
+    if(error == -1) // if code signals an error, tell the user and errorhandler function
     {
+        errorhandler("external command function");
         printf("\033[0;31m");
         printf("Unknown command, try another.\n");
         printf("\033[0m");
     }
-    return;
-}
-
-void errorhandler(char * call) // error handler function
-{
-    printf("\033[0;31m");
-    printf("Error when executing %s\n", call);
-    printf("\033[0m");
     return;
 }
