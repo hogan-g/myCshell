@@ -9,8 +9,10 @@
     Welcome to myshell, this program is a small example of a command line interpreter shell environment where commands and programs 
     can be run from standard input (user) or from a file (batch file).
     Once invoked myshell provides a shell environment which can be used to run basic UNIX commands and also user created programs, 
-    the shell will provide the user with a prompt, beside which you can write commands and programs to be executed by the program. [4]
-    myshell is a program built using the C language and uses functions and structures from c. [2] 
+    the shell will provide the user with a prompt, beside which you can write commands and programs to be executed by the program. 
+    If you want to understand more about a shell read this article about Bash -> [4]
+    myshell is a program built using the C language and uses functions and structures from c. 
+    You can look up how specific functions in C work in the documentation here -> [2] 
 
 ## OPTIONS
     .bin/myshell [file]
@@ -28,6 +30,21 @@
     After being invoked by the user without a batch file, the program provides an interactive program environment for the user 
     to run commands and programs, by default the shell will then output the results of these commands to the terminal under 
     the prompt where the user entered the command.
+    When the shell starts a prompt will be given to user that looks something like this
+    
+    /home/user/documents/2022-ca216-myshell >>>
+    
+    You can then enter commands beside this prompt, once the user presses the enter key the command will be interpreted by the program
+    and then executed by myshell, once the command finished, output will be pushed by default to the line below the command.
+    Here is an example using the echo command:
+
+    /home/user/documents/2022-ca216-myshell >>> echo Hello World!
+    Hello World!
+
+    Normal operation of the shell is achieved mostly in a while loop, which continuously waits for the user to enter lines of input,
+    then it tokenizes and sends the lines through functions to see which command it is and then executes it with functions for each
+    command, then the loop runs again and waits for the user to enter a another line of input. this continues until the quit command
+    executes an exit() statement or a signal interupts the program.
 
 ##  COMMANDS
     help - will show this manual in the terminal
@@ -73,7 +90,8 @@
     EXTERNAL COMMANDS
     All other commands will be pushed back out to the operating system and executed using the C system() function.
     This should support every command normally possibly executed on your OS. For example all general linux commands should 
-    work if you ran myshell using linux. [3]
+    work if you ran myshell using linux. 
+    See this article for some general linux commands that are good to know and use -> [3]
 
     Processing commands is achieved by using functions built in the myshell program, after a line of input is read from the input
     stream, it is split into what it contains and then a child process is born to do everything to do with that line form now on, the program
@@ -87,7 +105,7 @@
     > - signals next argument is a filename to output to (creates the file if it does not exist, overwrites it if it does)
     >> - signals next argument is a filename to output to (creates the file if it does not exists, appends to it if it does)
 
-## I/O REDIRECTION [5]
+## I/O REDIRECTION
     If the user wishes to change where the output of commands and programs is printed to or where the input for a program or 
     command is fetched from they can do so using I/O redirection and it's corresponding control symbols (<, >, >>)
     INPUT REDIRECTION
@@ -96,6 +114,7 @@
     OUTPUT REDIRECTION
     If the user inputs either of the output symbols (> or >>) followed by a filename, the shell will switch to print all 
     output for that command into the file named, creating it if it does not already exist.
+    To understand more about I/O redirection and streams read this -> [4]
 
     I/O Redirection is achieved by changing the input and output streams from their standard settings. By default input and output link to the 
     users terminal and keyboard. If the control symbols for I/O redirection are detected in a command by the child process the process enters 
@@ -107,6 +126,10 @@
     If the user inputs an & as the last argument after a command, the shell will execute this command in the background.
     This means that if the program/command takes a while to complete, the user will be given another prompt and may do other 
     commands while the background program is running, it will print output to the user as soon as it is finished.
+
+    Background Processing is the opposite of foreground processing which is the default way commands are processed, with foreground processing
+    if the program takes a long time to complete the shell sits waiting for it and the user cannot do anything while it is executing, background
+    processing is a way to avoid this waiting allowing the user to do other things while the background process is executing.
 
     Background processing is achieved by flagging to the parent process whether or not to wait for a child to finish. By default the parent
     process will wait after sending a child off to execute a command. It will wait until the child is completely finished before moving on to
