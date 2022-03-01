@@ -31,13 +31,44 @@
 
 ##  COMMANDS
     help - will show this manual in the terminal
+        Example:
+        >>> help
+        - shows this help manual
+    
     clr - will clear the screen of all text and give a new prompt for the user to use
+        Example:
+        >>> clr
+        - will clear the screen of all lines 
+    
     dir [directory] - will list the contents of the directory given (defaults to current directory if no argument given)
+        Example:
+        >>> dir . 
+        - will show the contents of the users current working directory
+
     cd [path] - will change the current working directory to the given path (will print CWD if no argument given)
+        Example:
+        >>> cd ..
+        - changes the current working directory back up one level
+
     environ - will print out all environment strings for user to see
+        Example:
+        >>> environ
+        - will print out all current environment strings*
+
     echo [text] - will output the given text back to standard output
+        Example:
+        >>> echo Hello World!
+        - will print "Hello World!" on a new line
+
     pause - will pause operation of the shell until the user presses the [ENTER] key
+        Example:
+        >>> pause
+        - will pause operation of shell until user presses the enter key
+
     quit- will close the shell program
+        Example:
+        >>> quit
+        - will close down the shell program
 
     EXTERNAL COMMANDS
     All other commands will be pushed back out to the operating system and executed using the C system() function.
@@ -85,13 +116,22 @@
 
 ### REFERENCES
     Below are references to reading material that helped me for the whole project, they are referenced in the above manual where they 
-    are related to the topic, [1] the bash man page was the main source of info for this man page.
+    are related to the topic which is being explained.
+    [1] the bash man page was the main source of info for this man page.
+    [2] C documentation was very useful for looking up syntax and uses of commands and functions in c e.g. freopen()
+    [3] A handy little article of a lot of basic linux commands, handy for user to read and also was helpful coming up with commands to
+    test functions in myshell e.g. tr with I/O redirection
+    [4] Overview of what is a shell, bash as an example, used to help make this manual.
+    [5] A great article on I/O redirection, understanding the standard streams (stdin, stdout, stderr), and how they are used in commands
 
     [1] “Linux bash man page,” Bash(1) - linux manual page. [Online]. Available: https://www.man7.org/linux/man-pages/man1/bash.1.html. [Accessed: 26-Feb-2022]. 
     [2] “C Documentation,” DevDocs. [Online]. Available: https://devdocs.io/c/. [Accessed: 26-Feb-2022]. 
-    [3] A. Le Morvan, S. Spencer, and A. Putta, “Commands for linux users,” Linux Commands - Documentation, 05-Jan-2022. [Online]. Available: https://docs.rockylinux.org/books/admin_guide/03-commands/. [Accessed: 26-Feb-2022]. 
-    [4] D. B. Both, “How to program with bash: Syntax and Tools,” Opensource.com, 21-Oct-2019. [Online]. Available: https://opensource.com/article/19/10/programming-bash-syntax-tools. [Accessed: 26-Feb-2022]. 
-    [5] D. Collazo, “An introduction to linux I/O redirection,” DigitalOcean, 23-Jan-2014. [Online]. Available: https://www.digitalocean.com/community/tutorials/an-introduction-to-linux-i-o-redirection. [Accessed: 26-Feb-2022]. 
+    [3] A. Le Morvan, S. Spencer, and A. Putta, “Commands for linux users,” Linux Commands - Documentation, 05-Jan-2022. [Online]. 
+    Available: https://docs.rockylinux.org/books/admin_guide/03-commands/. [Accessed: 26-Feb-2022]. 
+    [4] D. B. Both, “How to program with bash: Syntax and Tools,” Opensource.com, 21-Oct-2019. [Online]. 
+    Available: https://opensource.com/article/19/10/programming-bash-syntax-tools. [Accessed: 26-Feb-2022]. 
+    [5] D. Collazo, “An introduction to linux I/O redirection,” DigitalOcean, 23-Jan-2014. [Online]. 
+    Available: https://www.digitalocean.com/community/tutorials/an-introduction-to-linux-i-o-redirection. [Accessed: 26-Feb-2022]. 
 
 ## Made by Gareth Hogan
 ## Student Num: 20379616
