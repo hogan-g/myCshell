@@ -272,7 +272,7 @@ void pauseshell() // pause shell
 
 void showhelp()
 {
-    execlp("more","more","-d","manual/readme.md",NULL); //executes the more command to open readme
+    execlp("more","more","-d","../manual/readme.md",NULL); //executes the more command to open readme
     return;
 }
 
